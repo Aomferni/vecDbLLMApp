@@ -3,16 +3,15 @@ import json
 from flask import Flask, render_template, request
 
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import VectorDB
-from langchain.llms import OpenAI
 from langchain.vectorstores import Chroma
+from langchain.llms import OpenAI
 from langchain.document_loaders import PyPDFLoader
 from langchain import VectorDBQA
 
 app = Flask(__name__)
 
 OPENAI_API_KEY = ""  # 初始化OpenAI API密钥为空
-VECTOR_DB = VectorDB()  # 初始化向量数据库
+VECTOR_DB = Chroma()  # 初始化向量数据库
 
 @app.route('/', methods=['GET'])
 def index():
@@ -64,13 +63,12 @@ def get_vector_llm_answer():
     if not OPENAI_API_KEY:
         return "请先设置OpenAI API密钥"
     
-    llm = OpenAI(api_key=OPENAI_API_KEY)
     response = generate_answer(question)
     return response
 
 def generate_answer(question):
     llm = OpenAI(model_name="gpt-3.5-turbo", max_tokens=512, temperature=0)
-    chain = VectorDBQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=docsearch, return_source_documents=True)
+    chain = VectorDBQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=VECTOR_DB, return_source_documents=True)
     answer = chain.ask(question)
     return answer
 
