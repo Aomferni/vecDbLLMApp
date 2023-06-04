@@ -79,9 +79,57 @@ Flask 应用程序提供以下端点：
 
    发送一个带有 `question` 参数的 POST 请求到 `/getVecLLMAnswer`。应用程序将查询向量数据库以获取匹配的答案。如果找到，则返回答案；否则，使用语言模型生成答案。
 
+### 在 Railway 上部署
+
+[Railway](https://railway.app/) 是一个可以简化应用程序部署和托管的平台。以下是使用 Railway 部署 Language Chain 应用程序的步骤：
+
+1. 创建 Railway 帐户并登录。
+
+2. 在你的项目中创建一个新的应用程序。
+
+3. 设置项目的环境变量：
+   - `OPENAI_API_KEY`：将你的 OpenAI API 密钥设置为该变量的值。
+   - `USE_PROXY_LLM`：如果要使用 Proxy LLM API，请将其设置为 `"true"`；如果要直接使用 OpenAI LLM，请将其设置为 `"false"`。
+
+4. 在项目设置中，将 `command` 设置为 `python app.py`，将 `port` 设置为 `5000`。
+
+5. 在项目根目录中创建一个名为 `railway.yml` 的文件，并将以下内容添加到文件中：
+
+   ```yaml
+   envs:
+     - OPENAI_API_KEY
+     - USE_PROXY_LLM
+   ```
+
+6. 将项目部署到 Railway 上。Railway 将自动构建和部署应用程序。
+
+7. 部署完成后，你将获得一个分配的 URL，即可访问部署的应用程序。
+
+### 在 CodeSandbox 上部署
+
+[CodeSandbox](https://codesandbox.io/) 是一个在线代码编辑和部署平台，可以帮助你轻松地将应用程序部署到云端。以下是使用 CodeSandbox 部署 Language Chain 应用程序的步骤：
+
+1. 访问 CodeSandbox 网站并登录。
+
+2. 创建一个新的沙箱。
+
+3. 将应用程序代码复制粘贴到 CodeSandbox 的编辑器中。
+
+4. 在编辑器中创建一个名为 `.env` 的文件，并添加以下内容：
+
+   ```
+   OPENAI_API_KEY=YOUR_OPENAI_API_KEY
+   USE_PROXY_LLM=false
+   ```
+
+   将 `YOUR_OPENAI_API_KEY` 替换为你的 OpenAI API 密钥。
+
+5. 在编辑器中，点击运行按钮以启动应用程序。
+
+6. 运行完成后，你将获得一个分配的 URL，即可访问部署的应用程序。
+
 ### 致谢
 
 - Langchain 库提供了向量解析和问答功能的基础功能。
 - Flask 提供了 Web 应用程序框架。
 - OpenAI 提供了语言模型和 API 集成。
-
