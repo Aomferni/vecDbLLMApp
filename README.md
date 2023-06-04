@@ -32,7 +32,8 @@
 
 1. 配置环境变量：
 
-   - `OPENAI_API_KEY`：将你的 OpenAI API 密钥设置为该变量的值。
+   - `OPENAI_API_KEY`：应用使用的 OpenAI API KEY。
+   - `PROXY_API_KEY`：应用使用的 代理的 API KEY
    - `USE_PROXY_LLM`：如果要使用 Proxy LLM API，请将其设置为 `"true"`；如果要直接使用 OpenAI LLM，请将其设置为 `"false"`。
 
 2. 启动 Flask 服务器：
