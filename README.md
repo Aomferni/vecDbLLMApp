@@ -3,7 +3,7 @@
 这是一个使用 Language Chain 库进行各种自然语言处理任务（如问答和向量解析）的 Flask 网络应用。该应用允许用户通过 Web 界面与 Language Chain 功能进行交互。
 提供API给其他软件调用，提供向量数据库更新以及获取基于向量的问答系统得到的答案
 
-### 先决条件
+### 依赖库
 - Python 3.x
 - Flask
 - Langchain 库
