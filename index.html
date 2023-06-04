@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Language Chain App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Language Chain App</h1>
+    <form action="/setOpenAIKey" method="post">
+        <label for="openai_key">Set OpenAI API Key:</label>
+        <input type="text" id="openai_key" name="api_key" placeholder="Enter OpenAI API Key">
+        <input type="submit" value="Set API Key">
+    </form>
+    <form action="/setProxyLLMKey" method="post">
+        <label for="proxy_llm_key">Set Proxy LLM API Key:</label>
+        <input type="text" id="proxy_llm_key" name="api_key" placeholder="Enter Proxy LLM API Key">
+        <input type="submit" value="Set API Key">
+    </form>
+    <form action="/updateVecDb" method="post" enctype="multipart/form-data">
+        <label for="pdf_file">Update Vector Database:</label>
+        <input type="file" id="pdf_file" name="file">
+        <input type="submit" value="Upload PDF">
+    </form>
+    <form action="/testLLM" method="post">
+        <label for="llm_question">Test Language Model:</label>
+        <input type="text" id="llm_question" name="question" placeholder="Enter your question">
+        <input type="submit" value="Ask">
+    </form>
+    <form action="/getVecLLMAnswer" method="post">
+        <label for="vec_llm_question">Get Vector DB Answer:</label>
+        <input type="text" id="vec_llm_question" name="question" placeholder="Enter your question">
+        <input type="submit" value="Ask">
+    </form>
+    <div class="result">
+        <h2>Result:</h2>
+        <p>{{ result }}</p>
+    </div>
+</body>
+</html>
