@@ -1,5 +1,6 @@
 import os
 import json
+import requests
 from flask import Flask, render_template, request
 
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -12,6 +13,8 @@ app = Flask(__name__)
 
 OPENAI_API_KEY = ""  # 初始化OpenAI API密钥为空
 VECTOR_DB = Chroma()  # 初始化向量数据库
+PROXY_API_KEY = "wx-oDlmE5uJMetKOv2EIufMKufLjk6M_393bbc04282f2a5f004ab0aac5684bf1"  # 初始化 Proxy LLM API
+USE_PROXY_LLM = os.environ.get("USE_PROXY_LLM", "false").lower() == "true"  # 是否使用 Proxy LLM
 
 @app.route('/', methods=['GET'])
 def index():
@@ -22,6 +25,12 @@ def set_openai_key():
     global OPENAI_API_KEY
     OPENAI_API_KEY = request.form.get('api_key')
     return "OpenAI API密钥已设置"
+
+@app.route('/setProxyLLMKey', methods=['POST'])
+def set_proxy_llm_key():
+    global PROXY_API_KEY
+    PROXY_API_KEY = request.form.get('api_key')
+    return "Proxy LLM API 密钥已设置"
 
 @app.route('/updateVecDb', methods=['POST'])
 def update_vector_db():
@@ -40,14 +49,44 @@ def test_llm():
     question = request.form.get('question')
     if not question:
         return "请输入问题"
+        
+    if USE_PROXY_LLM:
+        response = proxy_llm(question)
+    else:
+        response = openai_llm(question)
     
+    return response
+
+def openai_llm(question):
     if not OPENAI_API_KEY:
-        return "请先设置OpenAI API密钥"
+        return "请先设置 OpenAI API 密钥"
     
-    # 使用OpenAI模型回答用户输入的问题
     llm = OpenAI(api_key=OPENAI_API_KEY)
     response = llm(question)
     return response
+
+def proxy_llm(question):
+    headers = {
+        'Authorization': f'Bearer {PROXY_API_KEY}',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        "messages": [
+            {
+                "role": "user",
+                "content": question
+            }
+        ],
+        "temperature": 1,
+        "max_tokens": 256,
+        "top_p": 1,
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "model": "gpt-3.5-turbo"
+    }
+    
+    response = requests.post('https://proxy.aidashi.wiki/v1/chat/completions', headers=headers, json=data)
+    return response.json()
 
 @app.route('/getVecLLMAnswer', methods=['POST'])
 def get_vector_llm_answer():
