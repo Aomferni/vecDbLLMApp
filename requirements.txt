@@ -1,3 +1,10 @@
-Flask
+flask
+requests
+PyYaml
+pysocks
+pypdf
 langchain
+unstructured
+chromadb
 openai
+tiktoken
