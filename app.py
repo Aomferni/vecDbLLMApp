@@ -20,19 +20,19 @@ USE_PROXY_LLM = os.environ.get("USE_PROXY_LLM", "false").lower() == "true"  # �
 def index():
     return render_template('index.html')
 
-@app.route('/setOpenAIKey', methods=['POST'])
+@app.route('/api/setOpenAIKey', methods=['POST'])
 def set_openai_key():
     global OPENAI_API_KEY
     OPENAI_API_KEY = request.form.get('api_key')
     return "OpenAI API密钥已设置"
 
-@app.route('/setProxyLLMKey', methods=['POST'])
+@app.route('/api/setProxyLLMKey', methods=['POST'])
 def set_proxy_llm_key():
     global PROXY_API_KEY
     PROXY_API_KEY = request.form.get('api_key')
     return "Proxy LLM API 密钥已设置"
 
-@app.route('/updateVecDb', methods=['POST'])
+@app.route('/api/updateVecDb', methods=['POST'])
 def update_vector_db():
     file = request.files['file']
     if file and file.filename.endswith('.pdf'):
@@ -44,7 +44,7 @@ def update_vector_db():
     else:
         return "请上传PDF文件"
 
-@app.route('/testLLM', methods=['POST'])
+@app.route('/api/testLLM', methods=['POST'])
 def test_llm():
     question = request.form.get('question')
     if not question:
@@ -88,7 +88,7 @@ def proxy_llm(question):
     response = requests.post('https://proxy.aidashi.wiki/v1/chat/completions', headers=headers, json=data)
     return response.json()
 
-@app.route('/getVecLLMAnswer', methods=['POST'])
+@app.route('/api/getVecLLMAnswer', methods=['POST'])
 def get_vector_llm_answer():
     question = request.form.get('question')
     if not question:

@@ -1,6 +1,6 @@
 import requests
 
-url = 'http://localhost:5000/testLLM'
+url = 'http://localhost:5000/api/testLLM'
 headers = {'Content-Type': 'application/x-www-form-urlencoded'}
 data = {'question': '请作为一个软件技术专家，给新手一点建议'}
 
