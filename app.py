@@ -16,9 +16,10 @@ VECTOR_DB = Chroma()  # 初始化向量数据库
 PROXY_API_KEY = "wx-oDlmE5uJMetKOv2EIufMKufLjk6M_393bbc04282f2a5f004ab0aac5684bf1"  # 初始化 Proxy LLM API
 USE_PROXY_LLM = os.environ.get("USE_PROXY_LLM", "false").lower() == "true"  # 是否使用 Proxy LLM
 
-@app.route('/', methods=['GET'])
-def index():
-    return render_template('index.html')
+# @app.route('/', methods=['GET'])
+# def index():
+#     return render_template('index.html')
+
 
 @app.route('/api/setOpenAIKey', methods=['POST'])
 def set_openai_key():
