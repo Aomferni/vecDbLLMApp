@@ -1,20 +1,7 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>AIGeniusHackers-ModelServer</title>
-    <style>
-        .scroll-box {
-            width: 400px;
-            height: 200px;
-            border: 1px solid #ccc;
-            overflow: auto;
-            padding: 10px;
-            margin-top: 10px;
-        }
-    </style>
-</head>
 <body>
-    <h1>AIGeniusHackers-ModelServer</h1>  
+    <h1>AIGeniusHackers-ModelServer</h1>
     <select id="route">
         <option value="official">官方路线</option>
         <option value="proxy">代理路线</option>
@@ -33,9 +20,9 @@
     <br>
     <div class="scroll-box" id="answer" readonly></div>
 
-    <h1>知识库设置</h1>
+    <h1>知识库问答</h1>
     <form method="POST" action="/knowledge_qa" enctype="multipart/form-data">
-        <label for="pdf">上传知识库文件PDF</label>
+        <label for="pdf">上传知识库文件PDF：</label>
         <input type="file" id="pdf" name="pdf">
         <input type="submit" value="提交">
     </form>
@@ -44,21 +31,39 @@
     {% endif %}
 
     <script>
-        function setKey() {
-            console.log("Hello World!");
-            console.log("选中的路线为: ");
-            var routeSelect = document.getElementById("route");
-            var selectedRoute = routeSelect.value;
+        function getAnswer() {
+            var question = document.getElementById("question").value;
+            var useVectorLLM = document.getElementById("useVectorLLM").checked;
 
+            var apiUrl = useVectorLLM ? "/api/getVecLLMAnswer" : "/api/testLLM";
+
+            fetch(apiUrl, {
+                method: "POST",
+                body: JSON.stringify({ question: question }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(function(response) {
+                return response.text();
+            })
+            .then(function(answer) {
+                document.getElementById("answer").innerHTML += answer + "<br>";
+            });
+        }
+
+        function setKey() {
+          var selectedRoute = this.value;
             if (selectedRoute === "official") {
                 setOpenAIKey();
             } else if (selectedRoute === "proxy") {
                 setProxyLLMKey();
-            }
+            }        
         }
 
         function setOpenAIKey() {
             var apiKey = document.getElementById("key").value;
+            document.getElementById("selectedRoute").value = selectedRoute;
             fetch("/api/setOpenAIKey", {
                 method: "POST",
                 body: JSON.stringify({ api_key: apiKey }),
@@ -70,7 +75,7 @@
                 return response.text();
             })
             .then(function(message) {
-                console.log(message); // 打印服务器响应消息
+                console.log(response.text());
             });
         }
 
@@ -87,6 +92,7 @@
                 return response.text();
             })
             .then(function(message) {
+                console.log(response.text());
             });
         }
     </script>
