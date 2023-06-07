@@ -2,24 +2,54 @@ import os
 import json
 import requests
 from flask import Flask, render_template, request
+import pdfplumber
+from langchain.vectorstores import FAISS
 
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
+from langchain.chains.question_answering import load_qa_chain
+from langchain.callbacks import get_openai_callback
+from langchain.text_splitter import CharacterTextSplitter
 from langchain.llms import OpenAI
-from langchain.document_loaders import PyPDFLoader
-from langchain import VectorDBQA
 
 app = Flask(__name__)
 
-OPENAI_API_KEY = ""  # 初始化OpenAI API密钥为空
-VECTOR_DB = Chroma()  # 初始化向量数据库
+OPENAI_API_KEY = "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"  # 随便填的KEY
 PROXY_API_KEY = "wx-oDlmE5uJMetKOv2EIufMKufLjk6M_393bbc04282f2a5f004ab0aac5684bf1"  # 初始化 Proxy LLM API
 USE_PROXY_LLM = os.environ.get("USE_PROXY_LLM", "false").lower() == "true"  # 是否使用 Proxy LLM
+knowledge_base = None  # 定义knowledge_base为全局变量
 
-# @app.route('/', methods=['GET'])
-# def index():
-#     return render_template('index.html')
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
 
+@app.route('/knowledge_qa', methods=['GET', 'POST'])
+def knowledge_qa():
+    print(os.getenv('OPENAI_API_KEY'))
+    if request.method == 'POST':
+        pdf_file = request.files['pdf']
+        if pdf_file:
+            # 文件处理逻辑
+            text = ""
+            with pdfplumber.open(pdf_file) as pdf_reader:
+                for page in pdf_reader.pages:
+                    text += page.extract_text()
+
+            # 文本分片
+            text_splitter = CharacterTextSplitter(
+                separator="\n",
+                chunk_size=1000,
+                chunk_overlap=50,
+                length_function=len
+            )
+            chunks = text_splitter.split_text(text)
+
+            # 创建embeddings
+            embeddings = OpenAIEmbeddings()
+            knowledge_base = FAISS.from_texts(chunks, embeddings)
+
+            # 将处理结果传递给模板
+            return render_template('index.html', knowledge_base=knowledge_base)
+        return "文件错误，请重新上传"
 
 @app.route('/api/setOpenAIKey', methods=['POST'])
 def set_openai_key():
@@ -32,18 +62,6 @@ def set_proxy_llm_key():
     global PROXY_API_KEY
     PROXY_API_KEY = request.form.get('api_key')
     return "Proxy LLM API 密钥已设置"
-
-@app.route('/api/updateVecDb', methods=['POST'])
-def update_vector_db():
-    file = request.files['file']
-    if file and file.filename.endswith('.pdf'):
-        # 处理上传的PDF文件，进行向量解析并存入向量数据库
-        # 假设这里使用的是langchain库中的相应功能进行向量解析和存储
-        vectors = parse_pdf_to_vectors(file)
-        VECTOR_DB.update(vectors)
-        return "向量数据库已更新"
-    else:
-        return "请上传PDF文件"
 
 @app.route('/api/testLLM', methods=['POST'])
 def test_llm():
@@ -95,28 +113,15 @@ def get_vector_llm_answer():
     if not question:
         return "请输入问题"
     
-    # 使用向量数据库和OpenAI模型进行问答
-    answer = VECTOR_DB.query(question)
-    if answer:
-        return answer
-    
     if not OPENAI_API_KEY:
         return "请先设置OpenAI API密钥"
     
-    response = generate_answer(question)
+    docs = knowledge_base.similarity_search(question, 1)
+    llm = OpenAI()  
+    chain = load_qa_chain(llm, chain_type="stuff")
+    with get_openai_callback() as cb:
+        response = chain.run(input_documents=docs, question=question)
     return response
-
-def generate_answer(question):
-    llm = OpenAI(model_name="gpt-3.5-turbo", max_tokens=512, temperature=0)
-    chain = VectorDBQA.from_chain_type(llm=llm, chain_type="stuff", vectorstore=VECTOR_DB, return_source_documents=True)
-    answer = chain.ask(question)
-    return answer
-
-def parse_pdf_to_vectors(file):
-    # 使用OpenAIEmbeddings对PDF文件进行向量解析
-    embeddings = OpenAIEmbeddings()
-    vectors = embeddings.parse_pdf(file)
-    return vectors
 
 if __name__ == '__main__':
     app.run(debug=True)

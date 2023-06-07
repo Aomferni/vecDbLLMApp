@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>软考知识库问答</title>
+</head>
+<body>
+    <h1>软考知识库问答</h1>
+    <form method="POST" action="/knowledge_qa" enctype="multipart/form-data">
+        <label for="pdf">上传知识库文件PDF：</label>
+        <input type="file" id="pdf" name="pdf">
+        <input type="submit" value="提交">
+    </form>
+    {% if response %}
+        <div>{{ response }}</div>
+    {% endif %}
+</body>
+</html>

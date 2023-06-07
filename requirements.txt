@@ -8,3 +8,4 @@ unstructured
 chromadb
 openai
 tiktoken
+pdfplumber
