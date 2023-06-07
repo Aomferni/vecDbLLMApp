@@ -1,5 +1,4 @@
 import os
-import json
 import requests
 from flask import Flask, render_template, request
 import pdfplumber
@@ -17,7 +16,7 @@ OPENAI_API_KEY = "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"  # 随便
 # 初始化 Proxy LLM API
 PROXY_API_KEY = "wx-oDlmE5uJMetKOv2EIufMKufLjk6M_393bbc04282f2a5f004ab0aac5684bf1"
 USE_PROXY_LLM = False  # 是否使用 Proxy LLM
-knowledge_base = None  # 定义knowledge_base为全局变量
+# knowledge_base = None  # 定义knowledge_base为全局变量
 
 
 @app.route('/', methods=['GET'])
@@ -57,8 +56,15 @@ def knowledge_qa():
 
 @app.route('/api/setOpenAIKey', methods=['POST'])
 def set_openai_key():
-    os.setenv('OPENAI_API_KEY', request.form.get('api_key'))
-    return "OpenAI API密钥已设置"
+    api_key = request.form.get('api_key')
+    print(api_key)
+    if api_key:
+        print("API Key 已设置")
+        os.environ['OPENAI_API_KEY'] = api_key
+        return "API Key 已设置"
+    else:
+        print("未提供有效的 API Key")
+        return "未提供有效的 API Key"
 
 
 @app.route('/api/setProxyLLMKey', methods=['POST'])
@@ -69,7 +75,7 @@ def set_proxy_llm_key():
 
 
 @app.route('/api/setRoute', methods=['POST'])
-def setRoute():
+def set_route():
     print("I'm setingRoute")
     route = request.form.get('route')
     print(USE_PROXY_LLM)
