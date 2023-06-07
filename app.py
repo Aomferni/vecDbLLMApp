@@ -14,13 +14,16 @@ from langchain.llms import OpenAI
 app = Flask(__name__)
 
 OPENAI_API_KEY = "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"  # 随便填的KEY
-PROXY_API_KEY = "wx-oDlmE5uJMetKOv2EIufMKufLjk6M_393bbc04282f2a5f004ab0aac5684bf1"  # 初始化 Proxy LLM API
-USE_PROXY_LLM = os.environ.get("USE_PROXY_LLM", "false").lower() == "true"  # 是否使用 Proxy LLM
+# 初始化 Proxy LLM API
+PROXY_API_KEY = "wx-oDlmE5uJMetKOv2EIufMKufLjk6M_393bbc04282f2a5f004ab0aac5684bf1"
+USE_PROXY_LLM = False  # 是否使用 Proxy LLM
 knowledge_base = None  # 定义knowledge_base为全局变量
+
 
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
+
 
 @app.route('/knowledge_qa', methods=['GET', 'POST'])
 def knowledge_qa():
@@ -51,11 +54,12 @@ def knowledge_qa():
             return render_template('index.html', knowledge_base=knowledge_base)
         return "文件错误，请重新上传"
 
+
 @app.route('/api/setOpenAIKey', methods=['POST'])
 def set_openai_key():
-    global OPENAI_API_KEY
-    OPENAI_API_KEY = request.form.get('api_key')
+    os.setenv('OPENAI_API_KEY', request.form.get('api_key'))
     return "OpenAI API密钥已设置"
+
 
 @app.route('/api/setProxyLLMKey', methods=['POST'])
 def set_proxy_llm_key():
@@ -63,26 +67,39 @@ def set_proxy_llm_key():
     PROXY_API_KEY = request.form.get('api_key')
     return "Proxy LLM API 密钥已设置"
 
+
+@app.route('/api/setRoute', methods=['POST'])
+def setRoute():
+    print("I'm setingRoute")
+    route = request.form.get('route')
+    print(USE_PROXY_LLM)
+    USE_PROXY_LLM = route
+    print(USE_PROXY_LLM)
+    return response
+
+
 @app.route('/api/testLLM', methods=['POST'])
 def test_llm():
     question = request.form.get('question')
     if not question:
         return "请输入问题"
-        
+
     if USE_PROXY_LLM:
         response = proxy_llm(question)
     else:
         response = openai_llm(question)
-    
+
     return response
+
 
 def openai_llm(question):
     if not OPENAI_API_KEY:
         return "请先设置 OpenAI API 密钥"
-    
-    llm = OpenAI(api_key=OPENAI_API_KEY)
+
+    llm = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
     response = llm(question)
     return response
+
 
 def proxy_llm(question):
     headers = {
@@ -103,25 +120,28 @@ def proxy_llm(question):
         "presence_penalty": 0,
         "model": "gpt-3.5-turbo"
     }
-    
-    response = requests.post('https://proxy.aidashi.wiki/v1/chat/completions', headers=headers, json=data)
+
+    response = requests.post(
+        'https://proxy.aidashi.wiki/v1/chat/completions', headers=headers, json=data)
     return response.json()
+
 
 @app.route('/api/getVecLLMAnswer', methods=['POST'])
 def get_vector_llm_answer():
     question = request.form.get('question')
     if not question:
         return "请输入问题"
-    
+
     if not OPENAI_API_KEY:
         return "请先设置OpenAI API密钥"
-    
+
     docs = knowledge_base.similarity_search(question, 1)
-    llm = OpenAI()  
+    llm = OpenAI()
     chain = load_qa_chain(llm, chain_type="stuff")
     with get_openai_callback() as cb:
         response = chain.run(input_documents=docs, question=question)
     return response
+
 
 if __name__ == '__main__':
     app.run(debug=True)
