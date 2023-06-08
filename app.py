@@ -26,7 +26,7 @@ def index():
 
 @app.route('/knowledge_qa', methods=['GET', 'POST'])
 def knowledge_qa():
-    print(os.getenv('OPENAI_API_KEY'))
+    # print(os.getenv('OPENAI_API_KEY'))
     if request.method == 'POST':
         pdf_file = request.files['pdf']
         if pdf_file:
@@ -35,6 +35,7 @@ def knowledge_qa():
             with pdfplumber.open(pdf_file) as pdf_reader:
                 for page in pdf_reader.pages:
                     text += page.extract_text()
+            print("读取PDF已完成")
 
             # 文本分片
             text_splitter = CharacterTextSplitter(
@@ -44,10 +45,12 @@ def knowledge_qa():
                 length_function=len
             )
             chunks = text_splitter.split_text(text)
+            print("splitPDF已完成")
 
             # 创建embeddings
             embeddings = OpenAIEmbeddings()
             knowledge_base = FAISS.from_texts(chunks, embeddings)
+            print("存入FAISS已完成")
 
             # 将处理结果传递给模板
             return render_template('index.html', knowledge_base=knowledge_base)

@@ -41,7 +41,16 @@
         <input type="submit" value="提交">
     </form>
     {% if response %}
-        <div>{{ response }}</div>
+        <script>
+            document.getElementById("answer").innerHTML += "知识库解析完成" + "<br>";
+        </script>
+
+        <div id="answer">
+            {% for item in knowledge_base[:5] %}
+                {{ item }}
+                <br>
+            {% endfor %}
+        </div>
     {% endif %}
 
     <script>
