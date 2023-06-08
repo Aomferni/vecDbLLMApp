@@ -15,7 +15,7 @@
 </head>
 <body>
     <h1>AIGeniusHackers-ModelServer</h1>  
-    <select id="route">
+    <select id="route" onchange="setRoute()">
         <option value="official">官方路线</option>
         <option value="proxy">代理路线</option>
     </select>
@@ -31,6 +31,7 @@
     <button id="ask" onclick="getAnswer()">ask</button>
     <br>
     <br>
+    <button id="clear" onclick="clearAnswer()">清空</button>
     <div class="scroll-box" id="answer" readonly></div>
 
     <h1>知识库设置</h1>
@@ -44,50 +45,105 @@
     {% endif %}
 
     <script>
+        // function setRoute() {
+        //     var route = document.getElementById("route").value;
+        //     console.log("这里是route：" + route);
+            
+        //     fetch("/api/setRoute", {
+        //         method: "POST",
+        //         body: "route=" + encodeURIComponent(route),
+        //         headers: {
+        //             "Content-Type": "application/x-www-form-urlencoded"
+        //         }
+        //     })
+        //     .then(function(response) {
+        //         return response.text();
+        //     })
+        //     .then(function(message) {
+        //         console.log(message);
+        //     });
+        // }
+
         function setKey() {
-            console.log("Hello World!");
-            console.log("选中的路线为: ");
             var routeSelect = document.getElementById("route");
             var selectedRoute = routeSelect.value;
+            
+            var keyElement = document.getElementById("key");
+            console.log("设置的KEY为: " + keyElement.value);
 
             if (selectedRoute === "official") {
                 setOpenAIKey();
             } else if (selectedRoute === "proxy") {
                 setProxyLLMKey();
             }
+            
+            keyElement.innerHTML = "";
         }
 
         function setOpenAIKey() {
             var apiKey = document.getElementById("key").value;
+            console.log("选中的路线为: " + apiKey);
+            
             fetch("/api/setOpenAIKey", {
                 method: "POST",
-                body: JSON.stringify({ api_key: apiKey }),
+                body: "api_key=" + encodeURIComponent(apiKey),
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/x-www-form-urlencoded"
                 }
-            })
+            })            
             .then(function(response) {
                 return response.text();
             })
             .then(function(message) {
-                console.log(message); // 打印服务器响应消息
+                document.getElementById("answer").innerHTML += message + "<br>";
             });
         }
 
         function setProxyLLMKey() {
             var apiKey = document.getElementById("key").value;
-            fetch("/api/setProxyLLMKey", {
+            fetch("/api/setOpenAIKey", {
                 method: "POST",
-                body: JSON.stringify({ api_key: apiKey }),
+                body: "api_key=" + encodeURIComponent(apiKey),
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            })            
+            .then(function(response) {
+                return response.text();
+            })
+            .then(function(message) {
+                document.getElementById("answer").innerHTML += message + "<br>";
+            });
+        }
+        
+        function getAnswer() {
+            var question = document.getElementById("question").value;
+            var useVectorLLM = document.getElementById("useVectorLLM").checked;
+
+            var apiUrl = useVectorLLM ? "/api/getVecLLMAnswer" : "/api/testLLM";
+
+            // var formData = new FormData();
+            // formData.append("question", question);
+            console.log("问题是：" + question);
+
+            fetch(apiUrl, {
+                method: "POST",
+                body: "question=" + encodeURIComponent(question),
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
                 }
             })
             .then(function(response) {
                 return response.text();
             })
-            .then(function(message) {
+            .then(function(answer) {
+                document.getElementById("answer").innerHTML += answer + "<br>";
             });
+        }
+        
+        function clearAnswer() {
+            var answerElement = document.getElementById("answer");
+            answerElement.innerHTML = "";
         }
     </script>
 </body>
