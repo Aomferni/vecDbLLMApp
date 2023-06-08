@@ -9,3 +9,4 @@ chromadb
 openai
 tiktoken
 pdfplumber
+faiss-cpu

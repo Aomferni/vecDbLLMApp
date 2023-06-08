@@ -26,7 +26,7 @@ def index():
 
 @app.route('/knowledge_qa', methods=['GET', 'POST'])
 def knowledge_qa():
-    print(os.getenv('OPENAI_API_KEY'))
+    # print(os.getenv('OPENAI_API_KEY'))
     if request.method == 'POST':
         pdf_file = request.files['pdf']
         if pdf_file:
@@ -35,6 +35,7 @@ def knowledge_qa():
             with pdfplumber.open(pdf_file) as pdf_reader:
                 for page in pdf_reader.pages:
                     text += page.extract_text()
+            print("读取PDF已完成")
 
             # 文本分片
             text_splitter = CharacterTextSplitter(
@@ -44,10 +45,12 @@ def knowledge_qa():
                 length_function=len
             )
             chunks = text_splitter.split_text(text)
+            print("splitPDF已完成")
 
             # 创建embeddings
             embeddings = OpenAIEmbeddings()
             knowledge_base = FAISS.from_texts(chunks, embeddings)
+            print("存入FAISS已完成")
 
             # 将处理结果传递给模板
             return render_template('index.html', knowledge_base=knowledge_base)
@@ -57,42 +60,52 @@ def knowledge_qa():
 @app.route('/api/setOpenAIKey', methods=['POST'])
 def set_openai_key():
     api_key = request.form.get('api_key')
-    print(api_key)
+    print("传入的key是：" + api_key)
     if api_key:
-        print("API Key 已设置")
         os.environ['OPENAI_API_KEY'] = api_key
         return "API Key 已设置"
     else:
-        print("未提供有效的 API Key")
         return "未提供有效的 API Key"
 
 
 @app.route('/api/setProxyLLMKey', methods=['POST'])
 def set_proxy_llm_key():
-    global PROXY_API_KEY
-    PROXY_API_KEY = request.form.get('api_key')
-    return "Proxy LLM API 密钥已设置"
+    api_key = request.form.get('api_key')
+    print("传入的key是：" + api_key)
+    if api_key:
+        global PROXY_API_KEY
+        PROXY_API_KEY = request.form.get('api_key')
+        return "Proxy LLM API 密钥已设置"
+    else:
+        return "未提供有效的 API Key"
 
 
-@app.route('/api/setRoute', methods=['POST'])
-def set_route():
-    print("I'm setingRoute")
-    route = request.form.get('route')
-    print(USE_PROXY_LLM)
-    USE_PROXY_LLM = route
-    print(USE_PROXY_LLM)
-    return response
+# @app.route('/api/setRoute', methods=['POST'])
+# def set_route():
+#     print("I'm setingRoute")
+#     route = request.form.get('route')
+    
+#     if route == "official":
+#         USE_PROXY_LLM = False
+#     else:
+#         USE_PROXY_LLM = True
+
+#     return response
 
 
 @app.route('/api/testLLM', methods=['POST'])
 def test_llm():
+    # print(os.getenv('OPENAI_API_KEY'))
     question = request.form.get('question')
+    print(question)
     if not question:
         return "请输入问题"
 
     if USE_PROXY_LLM:
+        print("代理路线回复")
         response = proxy_llm(question)
     else:
+        print("官方路线回复")
         response = openai_llm(question)
 
     return response
