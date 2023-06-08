@@ -21,7 +21,7 @@ USE_PROXY_LLM = False  # 是否使用 Proxy LLM
 
 @app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html')
+    return render_template('index_test.html')
 
 
 @app.route('/knowledge_qa', methods=['GET', 'POST'])

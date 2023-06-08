@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AIGeniusHackers-ModelServer</title>
+    <style>
+        .scroll-box {
+            width: 400px;
+            height: 200px;
+            border: 1px solid #ccc;
+            overflow: auto;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>AIGeniusHackers-ModelServer</h1>  
+    <select id="route" onchange="setRoute()">
+        <option value="official">官方路线</option>
+        <option value="proxy">代理路线</option>
+    </select>
+    <input type="hidden" id="selectedRoute" name="selected_route">
+    <input type="checkbox" id="useVectorLLM" name="use_vector_llm">
+    <label for="useVectorLLM">使用知识库作答</label>
+    <br>
+    <br>
+    <input type="text" id="key" placeholder="请输入API Key">
+    <button id="set" onclick="setKey()">set</button>    
+    <br>
+    <input type="text" id="question" placeholder="你可以在这里提问">
+    <button id="ask" onclick="getAnswer()">ask</button>
+    <br>
+    <br>
+    <button id="clear" onclick="clearAnswer()">清空</button>
+    <div class="scroll-box" id="answer" readonly></div>
+
+    <h1>知识库设置</h1>
+    <form method="POST" action="/knowledge_qa" enctype="multipart/form-data">
+        <label for="pdf">上传知识库文件PDF</label>
+        <input type="file" id="pdf" name="pdf">
+        <input type="submit" value="提交">
+    </form>
+    {% if response %}
+        <script>
+            document.getElementById("answer").innerHTML += "知识库解析完成" + "<br>";
+        </script>
+
+        <div id="answer">
+            {% for item in knowledge_base[:5] %}
+                {{ item }}
+                <br>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="logs-container">
+        <div class="scroll-box" id="userLog" readonly></div>
+        <div class="scroll-box" id="serverLog" readonly></div>
+    </div>
+
+    <script>
+        function addToUserLog(message) {
+            var userLogElement = document.getElementById("userLog");
+            var logEntry = document.createElement("div");
+            logEntry.textContent = getCurrentTime() + " 用户/前端操作：" + message;
+            userLogElement.appendChild(logEntry);
+        }
+
+        function addToServerLog(message) {
+            var serverLogElement = document.getElementById("serverLog");
+            var logEntry = document.createElement("div");
+            logEntry.textContent = getCurrentTime() + " 后端返回结果：" + message;
+            serverLogElement.appendChild(logEntry);
+        }
+
+        function getCurrentTime() {
+            var now = new Date();
+            var timeString = now.getHours().toString().padStart(2, "0") + ":" +
+                now.getMinutes().toString().padStart(2, "0") + ":" +
+                now.getSeconds().toString().padStart(2, "0");
+            return timeString;
+        }
+
+        function setKey() {
+            var routeSelect = document.getElementById("route");
+            var selectedRoute = routeSelect.value;
+            
+            var keyElement = document.getElementById("key");
+            var apiKey = keyElement.value;
+            keyElement.innerHTML = "";
+
+            addToUserLog("设置API Key为: " + apiKey);
+
+            if (selectedRoute === "official") {
+                setOpenAIKey(apiKey);
+            } else if (selectedRoute === "proxy") {
+                setProxyLLMKey(apiKey);
+            }
+        }
+
+        function setOpenAIKey(apiKey) {
+            addToServerLog("选中的路线为: " + apiKey);
+            
+            fetch("/api/setOpenAIKey", {
+                method: "POST",
+                body: "api_key=" + encodeURIComponent(apiKey),
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            })            
+            .then(function(response) {
+                return response.text();
+            })
+            .then(function(message) {
+                addToServerLog(message);
+            });
+        }
+
+        function setProxyLLMKey(apiKey) {
+            fetch("/api/setOpenAIKey", {
+                method: "POST",
+                body: "api_key=" + encodeURIComponent(apiKey),
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            })            
+            .then(function(response) {
+                return response.text();
+            })
+            .then(function(message) {
+                addToServerLog(message);
+            });
+        }
+        
+        function getAnswer() {
+            var question = document.getElementById("question").value;
+            var useVectorLLM = document.getElementById("useVectorLLM").checked;
+
+            var apiUrl = useVectorLLM ? "/api/getVecLLMAnswer" : "/api/testLLM";
+
+            console.log("问题是：" + question);
+            addToUserLog("提问：" + question);
+
+            fetch(apiUrl, {
+                method: "POST",
+                body: "question=" + encodeURIComponent(question),
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            })
+            .then(function(response) {
+                return response.text();
+            })
+            .then(function(answer) {
+                addToServerLog(answer);
+            });
+        }
+        
+        function clearAnswer() {
+            var answerElement = document.getElementById("answer");
+            answerElement.innerHTML = "";
+        }
+    </script>
+</body>
+</html>
