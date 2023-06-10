@@ -6,7 +6,7 @@ class TestSuite:
         self.openai_api_key = ""
 
     def run_test_proxy_api(self, question):
-        url = 'http://localhost:5000/api/testLLM'
+        url = 'https://rsiyjo-5000.csb.app//api/testLLM'
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         data = {'question': question}
 
@@ -17,7 +17,7 @@ class TestSuite:
             print('请求失败:', response.status_code)
 
     def run_test_set_openai_key(self, openai_api_key):
-        url = 'http://localhost:5000/api/setOpenAIKey'
+        url = 'https://rsiyjo-5000.csb.app//api/setOpenAIKey'
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         data = {'api_key': openai_api_key}
 
@@ -25,7 +25,7 @@ class TestSuite:
         print(response.text)
     
     def run_test_set_proxy_api_key(self, proxy_api_key):
-        url = 'http://localhost:5000/api/setProxyLLMKey'
+        url = 'https://rsiyjo-5000.csb.app/0/api/setProxyLLMKey'
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         data = {'api_key': proxy_api_key}
 
