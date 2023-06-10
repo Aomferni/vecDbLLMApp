@@ -32,7 +32,11 @@
     <br>
     <br>
     <button id="clear" onclick="clearAnswer()">清空</button>
-    <div class="scroll-box" id="answer" readonly></div>
+    <div class="logs-container">
+        <div class="scroll-box" id="userLog" readonly></div>
+        <div class="scroll-box" id="serverLog" readonly></div>
+    </div>
+
 
     <h1>知识库设置</h1>
     <form method="POST" action="/knowledge_qa" enctype="multipart/form-data">
@@ -40,6 +44,8 @@
         <input type="file" id="pdf" name="pdf">
         <input type="submit" value="提交">
     </form>
+    <div class="scroll-box" id="answer" readonly></div>
+
     {% if response %}
         <script>
             document.getElementById("answer").innerHTML += "知识库解析完成" + "<br>";
@@ -52,11 +58,6 @@
             {% endfor %}
         </div>
     {% endif %}
-
-    <div class="logs-container">
-        <div class="scroll-box" id="userLog" readonly></div>
-        <div class="scroll-box" id="serverLog" readonly></div>
-    </div>
 
     <script>
         function addToUserLog(message) {
@@ -158,6 +159,14 @@
         
         function clearAnswer() {
             var answerElement = document.getElementById("answer");
+            answerElement.innerHTML = "";
+        }
+        function clearFrontLog() {
+            var answerElement = document.getElementById("userLog");
+            answerElement.innerHTML = "";
+        }
+        function clearBackLog() {
+            var answerElement = document.getElementById("serverLog");
             answerElement.innerHTML = "";
         }
     </script>
